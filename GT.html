@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grocery Price Tracker</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #fff;
+      --text: #1d2433;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #2563eb;
+      --on-accent: #fff;
+      --good: #15803d;
+      --good-bg: #dcfce7;
+      --best-row: #f0fdf4;
+      --danger: #b91c1c;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --card: #1f2937;
+        --text: #f3f4f6;
+        --muted: #9ca3af;
+        --line: #374151;
+        --accent: #60a5fa;
+        --on-accent: #0b1220;
+        --good: #86efac;
+        --good-bg: #14532d;
+        --best-row: #12301f;
+        --danger: #f87171;
+      }
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    [hidden] {
+      display: none !important
+    }
+
+    body {
+      margin: 0;
+      font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text)
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px 16px 48px
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 4px
+    }
+
+    .sub {
+      color: var(--muted);
+      margin: 0 0 20px
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px
+    }
+
+    form.card {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      align-items: end
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted)
+    }
+
+    input,
+    select {
+      font: inherit;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--text);
+      width: 100%
+    }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: -1px
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      padding: 8px 12px
+    }
+
+    button:hover {
+      border-color: var(--accent)
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--on-accent);
+      font-weight: 600
+    }
+
+    button.danger:hover {
+      border-color: var(--danger);
+      color: var(--danger)
+    }
+
+    .btns {
+      display: flex;
+      gap: 8px
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px
+    }
+
+    .toolbar input {
+      flex: 1;
+      min-width: 180px
+    }
+
+    .chead {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px
+    }
+
+    .chead h2 {
+      margin: 0;
+      font-size: 1.25rem
+    }
+
+    .tag {
+      font-size: .72rem;
+      font-weight: 600;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 1px 8px;
+      vertical-align: middle
+    }
+
+    .note {
+      display: inline-block;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      padding: 1px 10px;
+      vertical-align: middle
+    }
+
+    .note.none {
+      color: var(--muted);
+      border-color: var(--line);
+      font-weight: 600
+    }
+
+    .subgroup {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      margin-top: 12px
+    }
+
+    .subgroup:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 8px
+    }
+
+    .subhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px 12px;
+      flex-wrap: wrap;
+      margin-bottom: 6px
+    }
+
+    .subtitle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .best-summary {
+      font-size: .9rem;
+      color: var(--muted)
+    }
+
+    .best-summary b {
+      color: var(--good)
+    }
+
+    .tablewrap {
+      overflow-x: auto
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .92rem
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap
+    }
+
+    th {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      color: var(--muted)
+    }
+
+    tr:last-child td {
+      border-bottom: none
+    }
+
+    .num {
+      text-align: right
+    }
+
+    tr.best td {
+      background: var(--best-row)
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--good-bg);
+      color: var(--good);
+      font-weight: 700;
+      font-size: .72rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 6px
+    }
+
+    .actions {
+      text-align: right
+    }
+
+    .actions button {
+      padding: 4px 10px;
+      font-size: .82rem;
+      margin-left: 4px
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted)
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>🛒 Grocery Price Tracker</h1>
+    <p class="sub">Enter prices from different stores and compare them by standardized unit price.</p>
+
+    <form id="form" class="card" autocomplete="off">
+      <label>Item name
+        <input id="item" list="itemList" required placeholder="e.g. Chicken">
+      </label>
+      <label>Cut / Note (optional)
+        <input id="note" list="noteList" placeholder="e.g. Breasts, 80/20">
+      </label>
+      <label>Store
+        <input id="store" list="storeList" required placeholder="e.g. Costco">
+      </label>
+      <label>Price ($)
+        <input id="price" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="0.00">
+      </label>
+      <label>Weight / volume
+        <input id="qty" type="number" min="0.0001" step="any" inputmode="decimal" required placeholder="e.g. 25">
+      </label>
+      <label>Unit
+        <select id="unit"></select>
+      </label>
+      <div class="btns">
+        <button type="submit" class="primary" id="submitBtn">Add price</button>
+        <button type="button" id="cancelBtn" hidden>Cancel</button>
+      </div>
+      <datalist id="itemList"></datalist>
+      <datalist id="noteList"></datalist>
+      <datalist id="storeList"></datalist>
+    </form>
+
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search items or cuts…">
+      <button type="button" id="exportBtn">Export backup</button>
+      <button type="button" id="importBtn">Import</button>
+      <input id="importFile" type="file" accept=".json,application/json" hidden>
+    </div>
+
+    <div id="groups"></div>
+  </main>
+
+  <script>
+    const KEY = 'groceryPriceTracker.v1'; // unchanged so your existing data still loads
+    const DEFAULT_STORES = ['Costco', "Sam's Club", 'H Mart', 'Mekong Supermarket', "Trader Joe's"];
+
+    // f = how many base units (grams / milliliters / each) in one of this unit
+    const UNITS = {
+      oz: { label: 'ounces (oz)', short: 'oz', type: 'weight', f: 28.349523125 },
+      lb: { label: 'pounds (lb)', short: 'lb', type: 'weight', f: 453.59237 },
+      g: { label: 'grams (g)', short: 'g', type: 'weight', f: 1 },
+      kg: { label: 'kilograms (kg)', short: 'kg', type: 'weight', f: 1000 },
+      floz: { label: 'fluid ounces (fl oz)', short: 'fl oz', type: 'volume', f: 29.5735295625 },
+      ml: { label: 'milliliters (mL)', short: 'mL', type: 'volume', f: 1 },
+      l: { label: 'liters (L)', short: 'L', type: 'volume', f: 1000 },
+      gal: { label: 'gallons (gal)', short: 'gal', type: 'volume', f: 3785.411784 },
+      each: { label: 'each / count', short: 'ea', type: 'count', f: 1 },
+      dozen: { label: 'dozen', short: 'doz', type: 'count', f: 12 }
+    };
+    // size = base units per displayed unit price column
+    const TYPES = {
+      weight: { name: 'Weight', cols: [{ label: 'per oz', size: 28.349523125 }, { label: 'per lb', size: 453.59237 }] },
+      volume: { name: 'Volume', cols: [{ label: 'per fl oz', size: 29.5735295625 }, { label: 'per L', size: 1000 }] },
+      count: { name: 'Count', cols: [{ label: 'per each', size: 1 }] }
+    };
+
+    const $ = s => document.querySelector(s);
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const clean = s => String(s == null ? '' : s).trim().replace(/\s+/g, ' ');
+    const norm = s => clean(s).toLowerCase();
+    const money = n => '$' + n.toFixed(n < 0.1 ? 4 : 3);
+    const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    // note is optional: older entries have no note at all
+    const valid = e => e && typeof e.item === 'string' && e.item.trim() && typeof e.store === 'string' && e.store.trim()
+      && Number.isFinite(e.price) && e.price >= 0 && Number.isFinite(e.qty) && e.qty > 0 && Object.hasOwn(UNITS, e.unit)
+      && (e.note == null || typeof e.note === 'string');
+
+    let items = load();
+    let editId = null;
+
+    function load() {
+      try {
+        const d = JSON.parse(localStorage.getItem(KEY) || '[]');
+        return Array.isArray(d)
+          ? d.filter(valid).map(e => ({ ...e, id: String(e.id || uid()), note: clean(e.note) }))
+          : [];
+      } catch { return []; }
+    }
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify(items)); }
+      catch { alert('Could not save to browser storage. Your changes may be lost when you close this page.'); }
+    }
+
+    // Reuse existing capitalization so "chicken" and "Chicken" group together
+    function canon(val, key, extra = []) {
+      const n = norm(val);
+      const hit = items.find(e => e.id !== editId && norm(e[key]) === n);
+      return hit ? hit[key] : (extra.find(s => norm(s) === n) || clean(val));
+    }
+    function canonNote(val) {
+      const n = norm(val);
+      if (!n) return '';
+      const hit = items.find(e => e.id !== editId && norm(e.note) === n);
+      return hit ? hit.note : clean(val);
+    }
+
+    function buildUnitSelect() {
+      $('#unit').innerHTML = Object.entries(TYPES).map(([t, T]) =>
+        `<optgroup label="${T.name}">` +
+        Object.entries(UNITS).filter(([, u]) => u.type === t).map(([k, u]) => `<option value="${k}">${u.label}</option>`).join('') +
+        `</optgroup>`).join('');
+    }
+
+    function uniq(arr) {
+      const m = new Map();
+      arr.forEach(v => { if (v && !m.has(norm(v))) m.set(norm(v), v); });
+      return [...m.values()].sort((a, b) => a.localeCompare(b));
+    }
+    const opts = arr => arr.map(v => `<option value="${esc(v)}">`).join('');
+
+    // Suggest notes already used with the item currently typed (or all notes if the item is blank)
+    function refreshNoteList() {
+      const it = norm($('#item').value);
+      const src = it ? items.filter(e => norm(e.item) === it) : items;
+      $('#noteList').innerHTML = opts(uniq(src.map(e => e.note)));
+    }
+
+    function refreshLists() {
+      $('#itemList').innerHTML = opts(uniq(items.map(e => e.item)));
+      $('#storeList').innerHTML = opts(uniq([...DEFAULT_STORES, ...items.map(e => e.store)]));
+      refreshNoteList();
+    }
+
+    // One cut/note comparison inside a card: store rows sorted cheapest first
+    function subHTML(s, showLabel) {
+      const T = TYPES[s.type], cols = T.cols;
+      s.rows.sort((a, b) => a.base - b.base);
+      const min = s.rows[0].base;
+      const multi = s.rows.length > 1;
+      const isBest = r => multi && r.base <= min * (1 + 1e-9);
+      const bestStores = [...new Set(s.rows.filter(isBest).map(r => r.store))].join(', ');
+
+      const summary = multi
+        ? `Best: <b>${esc(bestStores)}</b> · ${cols.map(c => money(min * c.size) + ' ' + c.label).join(' · ')}`
+        : 'Add another store to compare';
+
+      const label = s.note
+        ? `<span class="note">${esc(s.note)}</span>`
+        : (showLabel ? `<span class="note none">No cut / note</span>` : '');
+
+      const rows = s.rows.map(r => {
+        const pct = (r.base / min - 1) * 100;
+        const vs = multi && !isBest(r) ? '+' + (pct < 1 ? '&lt;1' : Math.round(pct)) + '%' : '';
+        return `<tr class="${isBest(r) ? 'best' : ''}">
+      <td>${esc(r.store)}${isBest(r) ? '<span class="badge">★ Cheapest</span>' : ''}</td>
+      <td class="num">$${r.price.toFixed(2)}</td>
+      <td class="num">${+r.qty} ${UNITS[r.unit].short}</td>
+      ${cols.map(c => `<td class="num"><b>${money(r.base * c.size)}</b></td>`).join('')}
+      <td class="num muted">${vs}</td>
+      <td class="muted">${esc(r.date || '')}</td>
+      <td class="actions">
+        <button data-act="edit" data-id="${esc(r.id)}">Edit</button>
+        <button class="danger" data-act="del" data-id="${esc(r.id)}">Delete</button>
+      </td>
+    </tr>`;
+      }).join('');
+
+      return `<div class="subgroup">
+    <div class="subhead">
+      <div class="subtitle">${label}<span class="tag">by ${T.name.toLowerCase()}</span></div>
+      <div class="best-summary">${summary}</div>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr>
+        <th>Store</th><th class="num">Price</th><th class="num">Size</th>
+        ${cols.map(c => `<th class="num">${c.label}</th>`).join('')}
+        <th class="num">vs. best</th><th>Added</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </div>`;
+    }
+
+    // One main card per item name, holding a sub-group for each cut/note
+    function cardHTML(c) {
+      const multi = c.subs.length > 1;
+      return `<section class="card">
+    <div class="chead">
+      <h2>${esc(c.name)}</h2>
+      ${multi ? `<span class="tag">${c.subs.length} cuts / notes</span>` : ''}
+    </div>
+    ${c.subs.map(s => subHTML(s, multi)).join('')}
+  </section>`;
+    }
+
+    function render() {
+      const q = norm($('#search').value);
+      const cards = new Map();
+      for (const e of items) {
+        const u = UNITS[e.unit];
+        const ck = norm(e.item);
+        if (!cards.has(ck)) cards.set(ck, { name: e.item, subs: new Map() });
+        const c = cards.get(ck);
+        const sk = norm(e.note) + '|' + u.type; // cut/note + unit type
+        if (!c.subs.has(sk)) c.subs.set(sk, { note: e.note || '', type: u.type, rows: [] });
+        c.subs.get(sk).rows.push({ ...e, base: e.price / (e.qty * u.f) });
+      }
+      const list = [...cards.values()].map(c => {
+        let subs = [...c.subs.values()];
+        if (q) subs = subs.filter(s => norm(c.name + ' ' + s.note).includes(q));
+        subs.sort((a, b) => a.note.localeCompare(b.note) || a.type.localeCompare(b.type));
+        return { name: c.name, subs };
+      }).filter(c => c.subs.length).sort((a, b) => a.name.localeCompare(b.name));
+
+      $('#groups').innerHTML = list.length
+        ? list.map(cardHTML).join('')
+        : `<div class="card empty">${items.length ? 'No items match your search.' : 'No items yet. Add your first price above.'}</div>`;
+      refreshLists();
+    }
+
+    function resetForm() {
+      editId = null;
+      $('#form').reset();
+      $('#submitBtn').textContent = 'Add price';
+      $('#cancelBtn').hidden = true;
+      refreshNoteList();
+    }
+
+    $('#form').addEventListener('submit', ev => {
+      ev.preventDefault();
+      const price = parseFloat($('#price').value), qty = parseFloat($('#qty').value);
+      if (!(price >= 0) || !(qty > 0)) return;
+      const rec = {
+        item: canon($('#item').value, 'item'),
+        note: canonNote($('#note').value),
+        store: canon($('#store').value, 'store', DEFAULT_STORES),
+        price, qty, unit: $('#unit').value
+      };
+      const wasEditing = !!editId;
+      if (wasEditing) {
+        const i = items.findIndex(e => e.id === editId);
+        if (i >= 0) items[i] = { ...items[i], ...rec };
+      } else {
+        items.push({ id: uid(), date: new Date().toLocaleDateString('en-CA'), ...rec });
+      }
+      save();
+      resetForm();
+      if (!wasEditing) { $('#store').value = rec.store; $('#unit').value = rec.unit; } // speeds up entering many items from one store
+      render();
+      $('#item').focus();
+    });
+
+    $('#item').addEventListener('input', refreshNoteList);
+    $('#cancelBtn').addEventListener('click', resetForm);
+    $('#search').addEventListener('input', render);
+
+    $('#groups').addEventListener('click', ev => {
+      const b = ev.target.closest('button[data-act]');
+      if (!b) return;
+      const id = b.dataset.id;
+      if (b.dataset.act === 'del') {
+        if (!confirm('Delete this entry?')) return;
+        items = items.filter(e => e.id !== id);
+        if (editId === id) resetForm();
+        save(); render();
+      } else {
+        const e = items.find(x => x.id === id);
+        if (!e) return;
+        editId = id;
+        $('#item').value = e.item; $('#note').value = e.note || ''; $('#store').value = e.store;
+        $('#price').value = e.price; $('#qty').value = e.qty; $('#unit').value = e.unit;
+        $('#submitBtn').textContent = 'Update price';
+        $('#cancelBtn').hidden = false;
+        refreshNoteList();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        $('#price').focus();
+      }
+    });
+
+    $('#exportBtn').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'grocery-prices-' + new Date().toLocaleDateString('en-CA') + '.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    });
+
+    $('#importBtn').addEventListener('click', () => $('#importFile').click());
+    $('#importFile').addEventListener('change', async ev => {
+      const file = ev.target.files[0];
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (!Array.isArray(data)) throw new Error('bad format');
+        const ok = data.filter(valid).map(e => ({
+          id: uid(), item: clean(e.item), note: clean(e.note), store: clean(e.store), price: e.price,
+          qty: e.qty, unit: e.unit, date: typeof e.date === 'string' ? e.date : ''
+        }));
+        items.push(...ok);
+        save(); render();
+        alert(`Imported ${ok.length} of ${data.length} entries.`);
+      } catch {
+        alert('Could not read that file. Please choose a JSON file exported from this app.');
+      }
+      ev.target.value = '';
+    });
+
+    buildUnitSelect();
+    render();
+  </script>
+</body>
+
+</html>
